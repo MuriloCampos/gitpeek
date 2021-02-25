@@ -5,15 +5,28 @@ import TextField from '@material-ui/core/TextField';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import parse from 'autosuggest-highlight/parse';
 import match from 'autosuggest-highlight/match';
+import Lottie from 'react-lottie';
 
+import animationData from '../assets/peekAnimation.json';
+import useRepositories from '../hooks/useRepositories';
 import ReposList from '../components/ReposList';
 import ReposChips from '../components/ReposChips';
-import {languages} from '../utils/languages';
+import { languages } from '../utils/languages';
+
+const defaultOptions = {
+  loop: true,
+  autoplay: true,
+  animationData: animationData,
+  rendererSettings: {
+    preserveAspectRatio: 'xMidYMid slice'
+  }
+};
 
 export default function Home() {
   const [currentLanguage, setCurrentLanguage] = useState('');
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [page, setPage] = useState(1);
+  const { data, isLoading } = useRepositories(currentLanguage, page, currentLanguage !== '')
 
   const handleChange = (event: any, value: string) => {
     const language = value;
@@ -25,8 +38,7 @@ export default function Home() {
     }
   }
 
-  const handleDelete = (lang: string) => {
-    console.log('bla')
+  const handleDeleteChip = (lang: string) => {
     const index = selectedLanguages.findIndex(item => item === lang);
 
     if (index !== -1) {
@@ -34,8 +46,12 @@ export default function Home() {
     }
   }
 
+  const handleClickChip = (lang: string) => {
+    setCurrentLanguage(lang);
+  }
+
   return (
-    <div tw="bg-gradient-to-b from-gray-900 via-gray-700 to-gray-600">
+    <div tw="flex flex-col w-screen h-full bg-black bg-opacity-95 px-10">
       <Head>
         <title>Gitpeek</title>
       </Head>
@@ -46,20 +62,21 @@ export default function Home() {
         getOptionLabel={option => option}
         autoHighlight
         freeSolo
+        blurOnSelect
+        clearOnBlur
+        disabled={selectedLanguages.length > 4}
         style={{
-          flex: 1,
           border: 0,
           borderRadius: 8,
           padding: 8,
         }}
-        value={currentLanguage}
         onChange={handleChange}
         renderInput={params => (
           <TextField
             {...params}
             label="Choose a language"
             margin="normal"
-            variant="outlined"
+            variant="filled"
             style={{ backgroundColor: '#FFF', borderRadius: 8 }}
           />
         )}
@@ -82,9 +99,24 @@ export default function Home() {
         }}
       />
 
-      <ReposChips languages={selectedLanguages} handleDelete={handleDelete} />
 
-      <ReposList />
+
+      <ReposChips languages={selectedLanguages} currentLanguage={currentLanguage} handleDelete={handleDeleteChip} handleClick={handleClickChip} />
+
+      {/* <button disabled={selectedLanguages.length < 5} tw="h-auto bg-red-400 p-3 rounded text-white disabled:bg-red-200" type="button">Peek</button> */}
+
+      {isLoading ? (
+        <Lottie
+        options={defaultOptions}
+        tw="h-48 w-48"
+      />
+      ) : (
+        <>
+          {data && data.items.length > 0 && selectedLanguages.length > 0 && (
+            <ReposList data={data.items} />
+          )}
+        </>
+      )}
     </div>
   )
 }

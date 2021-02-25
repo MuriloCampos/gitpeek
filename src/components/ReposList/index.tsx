@@ -1,19 +1,34 @@
-import useRepositories from '../../hooks/useRepositories';
+import tw from 'twin.macro'
+import Image from 'next/image'
 
-const ReposList: React.FC = () => {
-  const { data, isLoading } = useRepositories('javascript', 1);
+import IRepository from '../../interfaces/Repository';
 
-  if (!data || isLoading) {
-    return <span>loading...</span>
-  }
+interface ReposListProps {
+  data: IRepository[];
+}
 
+const ReposList: React.FC<ReposListProps> = ({ data }) => {
   return (
     <div>
-      <ul>
-        {data.items.map(item => (
-          <li key={item.id}>{item.name}</li>
-        ))}
-      </ul>
+      {data.length > 0 ? (
+        <ul>
+          {data.map(item => (
+            <li key={item.id}>
+              <div tw="p-5 mb-5 rounded" style={{ backgroundColor: '#102A43' }}>
+                <span style={{ color: '#fff' }}>{item.name}</span>
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : (
+          <Image
+            src="/octojedi.jpeg"
+            alt="No repos found"
+            width={500}
+            height={500}
+          />
+
+        )}
     </div>
   );
 }

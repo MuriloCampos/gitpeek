@@ -23,12 +23,13 @@ const getRepositories = async ({ pageParam = 1, queryKey }) => {
   return { ...data, totalPages };
 };
 
-export default function useRepositories(language: string, page: number) {
+export default function useRepositories(language: string, page: number, isEnabled: boolean) {
   return useQuery<ApiResponse, Error>(
     ['repositories', language, page],
     getRepositories,
     {
       keepPreviousData: true,
+      enabled: isEnabled,
     },
   );
 }
