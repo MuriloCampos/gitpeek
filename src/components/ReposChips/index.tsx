@@ -13,6 +13,7 @@ const ReposChips: React.FC<ReposChipsProps> = ({ languages, handleDelete, handle
     <div tw="mb-5">
       {languages.map(language => (
         <Chip
+          key={language}
           color={language === currentLanguage ? 'primary' : 'default'}
           label={language}
           onDelete={() => handleDelete(language)}

@@ -6,9 +6,11 @@ import Autocomplete from '@material-ui/lab/Autocomplete';
 import parse from 'autosuggest-highlight/parse';
 import match from 'autosuggest-highlight/match';
 import Lottie from 'react-lottie';
+import Image from 'next/image'
+import Chip from '@material-ui/core/Chip';
 
 import animationData from '../assets/peekAnimation.json';
-import useRepositories from '../hooks/useRepositories';
+import useFeaturedRepositories from '../hooks/useFeaturedRepositories';
 import ReposList from '../components/ReposList';
 import ReposChips from '../components/ReposChips';
 import { languages } from '../utils/languages';
@@ -24,9 +26,9 @@ const defaultOptions = {
 
 export default function Home() {
   const [currentLanguage, setCurrentLanguage] = useState('');
+  const [interval, setInterval] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
-  const [page, setPage] = useState(1);
-  const { data, isLoading } = useRepositories(currentLanguage, page, currentLanguage !== '')
+  const { data: response, isLoading } = useFeaturedRepositories(currentLanguage, interval, currentLanguage !== '')
 
   const handleChange = (event: any, value: string) => {
     const language = value;
@@ -34,7 +36,6 @@ export default function Home() {
     if (languages.includes(language) && !selectedLanguages.includes(language)) {
       setCurrentLanguage(language);
       setSelectedLanguages(current => [...current, language])
-      setPage(1);
     }
   }
 
@@ -51,10 +52,12 @@ export default function Home() {
   }
 
   return (
-    <div tw="flex flex-col w-screen h-full bg-black bg-opacity-95 px-10">
+    <div css={[tw`flex flex-grow flex-col w-full h-full min-h-screen bg-black bg-opacity-95 px-10`]}>
       <Head>
         <title>Gitpeek</title>
       </Head>
+
+      <h1 tw="text-white my-5 text-5xl">Git<b tw="text-red-400">peek</b></h1>
 
       <Autocomplete
         id="autocomplete-input"
@@ -64,6 +67,7 @@ export default function Home() {
         freeSolo
         blurOnSelect
         clearOnBlur
+        clearOnEscape
         disabled={selectedLanguages.length > 4}
         style={{
           border: 0,
@@ -99,24 +103,63 @@ export default function Home() {
         }}
       />
 
+      <div tw="flex flex-row">
+        <Chip
+          color={interval === 'daily' ? 'primary' : 'default'}
+          label="This day"
+          onClick={() => setInterval('daily')}
+          style={{ margin: 5 }}
+        />
+        <Chip
+          color={interval === 'weekly' ? 'primary' : 'default'}
+          label="This week"
+          onClick={() => setInterval('weekly')}
+          style={{ margin: 5 }}
+        />
+        <Chip
+          color={interval === 'monthly' ? 'primary' : 'default'}
+          label="This month"
+          onClick={() => setInterval('monthly')}
+          style={{ margin: 5 }}
+        />
+      </div>
 
+      {selectedLanguages.length > 0 && <div tw="border-t border-gray-50 w-full my-5" />}
 
       <ReposChips languages={selectedLanguages} currentLanguage={currentLanguage} handleDelete={handleDeleteChip} handleClick={handleClickChip} />
 
-      {/* <button disabled={selectedLanguages.length < 5} tw="h-auto bg-red-400 p-3 rounded text-white disabled:bg-red-200" type="button">Peek</button> */}
-
       {isLoading ? (
-        <Lottie
-        options={defaultOptions}
-        tw="h-48 w-48"
-      />
+        <div tw="self-center">
+          <Lottie
+            options={{
+              loop: true,
+              autoplay: true,
+              animationData: animationData,
+              rendererSettings: {
+                preserveAspectRatio: 'xMidYMid slice'
+              }
+            }}
+            width={300}
+            height={300}
+          />
+        </div>
       ) : (
-        <>
-          {data && data.items.length > 0 && selectedLanguages.length > 0 && (
-            <ReposList data={data.items} />
-          )}
-        </>
-      )}
+          <>
+            {response && response.data && response.data.length > 0 && selectedLanguages.length > 0 ? (
+              <ReposList data={response.data} />
+            ) : (
+                <>
+                  {currentLanguage !== '' ? (
+                    <span tw="text-white self-center justify-self-center font-semibold text-lg">No repos found :(</span>
+                  ) : (
+                      <div tw="self-center">
+                        <Image src="/peek.svg" width={300} height={300} />
+                      </div>
+                    )}
+                </>
+              )}
+          </>
+        )}
     </div>
   )
 }
