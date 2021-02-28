@@ -9,16 +9,17 @@ export default function useWindowDimensions() {
   });
 
   useEffect(() => {
-    // only execute all the code below in client side
-    if (typeof window !== 'undefined') {
-      // Handler to call on window resize
-      function handleResize() {
-        // Set window width/height to state
+
+    function handleResize() {
+      if (typeof window !== 'undefined') {
         setWindowSize({
           width: window.innerWidth,
           height: window.innerHeight,
         });
       }
+    }
+
+    if (typeof window !== 'undefined') {
 
       // Add event listener
       window.addEventListener("resize", handleResize);

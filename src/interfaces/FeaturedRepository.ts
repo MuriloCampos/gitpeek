@@ -1,4 +1,4 @@
-export default interface {
+export default interface FeaturedRepository {
   repo: string;
   stargazers: string;
 }

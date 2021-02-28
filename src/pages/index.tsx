@@ -18,7 +18,7 @@ import ReposList from '../components/ReposList';
 import ReposChips from '../components/ReposChips';
 import { languages } from '../utils/languages';
 
-export default function Home() {
+const App = () => {
   const [currentLanguage, setCurrentLanguage] = useState('');
   const [searchOption, setSearchOption] = useState<'featured' | 'stars'>('featured');
   const [interval, setInterval] = useState<'daily' | 'weekly' | 'monthly'>('daily');
@@ -46,8 +46,6 @@ export default function Home() {
   const handleClickChip = (lang: string) => {
     setCurrentLanguage(lang);
   }
-
-  console.log(starredResponse);
 
   return (
     <div css={[tw`flex flex-grow flex-col w-full h-full lg:items-center min-h-screen bg-black bg-opacity-95 px-10`]}>
@@ -219,3 +217,5 @@ export default function Home() {
     </div>
   )
 }
+
+export default App

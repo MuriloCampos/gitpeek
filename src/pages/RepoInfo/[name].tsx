@@ -1,7 +1,7 @@
 import React from 'react';
 import axios from 'axios';
 import tw from 'twin.macro'
-import { GetServerSideProps } from 'next';
+import { GetServerSideProps, GetServerSidePropsContext } from 'next';
 import Image from 'next/image';
 import StarsIcon from '@material-ui/icons/StarsOutlined';
 
@@ -56,7 +56,8 @@ const RepoInfo: React.FC<RepoInfoProps> = ({ data, issues }) => {
 export default RepoInfo;
 
 export const getServerSideProps: GetServerSideProps<RepoInfoProps> = async (context) => {
-  const { name } = context.query;
+  const queries = context.query;
+  const name = typeof queries.name === 'string' ? queries.name : ''
   const repo_api_url = `https://api.github.com/repos/${name.replace('_', '/')}`;
   const repo_issues_url = `${repo_api_url}/issues`;
 
