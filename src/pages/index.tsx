@@ -8,18 +8,23 @@ import match from 'autosuggest-highlight/match';
 import Lottie from 'react-lottie';
 import Image from 'next/image'
 import Chip from '@material-ui/core/Chip';
+import Trending from '@material-ui/icons/TrendingUpOutlined';
+import StarsIcon from '@material-ui/icons/StarsOutlined';
 
 import animationData from '../assets/peekAnimation.json';
 import useFeaturedRepositories from '../hooks/useFeaturedRepositories';
+import useMostStarredRepos from '../hooks/useMostStarredRepos';
 import ReposList from '../components/ReposList';
 import ReposChips from '../components/ReposChips';
 import { languages } from '../utils/languages';
 
 export default function Home() {
   const [currentLanguage, setCurrentLanguage] = useState('');
+  const [searchOption, setSearchOption] = useState<'featured' | 'stars'>('featured');
   const [interval, setInterval] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
-  const { data: response, isLoading } = useFeaturedRepositories(currentLanguage, interval, currentLanguage !== '')
+  const { data: featuredResponse, isLoading: isLoadingFeaturedRepos } = useFeaturedRepositories(currentLanguage, interval, currentLanguage !== '' && searchOption === 'featured')
+  const { data: starredResponse, isLoading: isLoadingStarredRepos } = useMostStarredRepos(currentLanguage, currentLanguage !== '' && searchOption === 'stars')
 
   const handleChange = (event: any, value: string) => {
     const language = value;
@@ -42,6 +47,8 @@ export default function Home() {
     setCurrentLanguage(lang);
   }
 
+  console.log(starredResponse);
+
   return (
     <div css={[tw`flex flex-grow flex-col w-full h-full lg:items-center min-h-screen bg-black bg-opacity-95 px-10`]}>
       <Head>
@@ -50,8 +57,20 @@ export default function Home() {
 
       <div tw="lg:w-9/12">
         <a href="/">
-          <h1 tw="text-white my-5 text-5xl">Git<b tw="text-red-400">peek</b></h1>
+          <h1 tw="text-white my-5 text-5xl mb-10">Git<b tw="text-red-400">peek</b></h1>
         </a>
+
+        <div>
+          <button onClick={() => setSearchOption('featured')} style={{ color: '#fff', alignItems: 'center', marginRight: 10, padding: 5, borderRadius: 5, borderWidth: 1, borderColor: searchOption === 'featured' ? '#fff' : '#000' }}>
+            <Trending tw="mr-2" />
+            <span>Trending</span>
+          </button>
+
+          <button onClick={() => setSearchOption('stars')} style={{ color: '#fff', alignItems: 'center', marginRight: 10, padding: 5, borderRadius: 5, borderWidth: 1, borderColor: searchOption === 'stars' ? '#fff' : '#000' }}>
+            <StarsIcon tw="mr-2" />
+            <span>Most starred</span>
+          </button>
+        </div>
 
         <Autocomplete
           id="autocomplete-input"
@@ -97,63 +116,105 @@ export default function Home() {
           }}
         />
 
-        <div tw="flex flex-row w-full">
-          <Chip
-            color={interval === 'daily' ? 'primary' : 'default'}
-            label="This day"
-            onClick={() => setInterval('daily')}
-            style={{ margin: 5 }}
-          />
-          <Chip
-            color={interval === 'weekly' ? 'primary' : 'default'}
-            label="This week"
-            onClick={() => setInterval('weekly')}
-            style={{ margin: 5 }}
-          />
-          <Chip
-            color={interval === 'monthly' ? 'primary' : 'default'}
-            label="This month"
-            onClick={() => setInterval('monthly')}
-            style={{ margin: 5 }}
-          />
-        </div>
+        {searchOption === 'featured' && (
+          <div tw="flex flex-row w-full">
+            <Chip
+              color={interval === 'daily' ? 'primary' : 'default'}
+              label="This day"
+              onClick={() => setInterval('daily')}
+              style={{ margin: 5 }}
+            />
+            <Chip
+              color={interval === 'weekly' ? 'primary' : 'default'}
+              label="This week"
+              onClick={() => setInterval('weekly')}
+              style={{ margin: 5 }}
+            />
+            <Chip
+              color={interval === 'monthly' ? 'primary' : 'default'}
+              label="This month"
+              onClick={() => setInterval('monthly')}
+              style={{ margin: 5 }}
+            />
+          </div>
+        )}
 
         {selectedLanguages.length > 0 && <div tw="border-t border-gray-50 w-full my-5" />}
 
         <ReposChips languages={selectedLanguages} currentLanguage={currentLanguage} handleDelete={handleDeleteChip} handleClick={handleClickChip} />
 
-        {isLoading ? (
-          <div tw="self-center">
-            <Lottie
-              options={{
-                loop: true,
-                autoplay: true,
-                animationData: animationData,
-                rendererSettings: {
-                  preserveAspectRatio: 'xMidYMid slice'
-                }
-              }}
-              width={300}
-              height={300}
-            />
-          </div>
+        {searchOption === 'featured' ? (
+          <>
+            {isLoadingFeaturedRepos ? (
+              <div tw="self-center">
+                <Lottie
+                  options={{
+                    loop: true,
+                    autoplay: true,
+                    animationData: animationData,
+                    rendererSettings: {
+                      preserveAspectRatio: 'xMidYMid slice'
+                    }
+                  }}
+                  width={300}
+                  height={300}
+                />
+              </div>
+            ) : (
+                <>
+                  {featuredResponse && featuredResponse.data && featuredResponse.data.length > 0 && selectedLanguages.length > 0 ? (
+                    <ReposList featuredData={featuredResponse.data} starredData={[]} mode={searchOption} />
+                  ) : (
+                      <>
+                        {currentLanguage !== '' ? (
+                          <span tw="text-white self-center justify-self-center font-semibold text-lg">No repos found :(</span>
+                        ) : (
+                            <div tw="flex justify-center">
+                              <Image src="/peek.svg" width={300} height={300} layout="intrinsic" />
+                            </div>
+                          )}
+                      </>
+                    )}
+                </>
+              )}
+          </>
         ) : (
             <>
-              {response && response.data && response.data.length > 0 && selectedLanguages.length > 0 ? (
-                <ReposList data={response.data} />
+              {isLoadingStarredRepos ? (
+                <div tw="self-center">
+                  <Lottie
+                    options={{
+                      loop: true,
+                      autoplay: true,
+                      animationData: animationData,
+                      rendererSettings: {
+                        preserveAspectRatio: 'xMidYMid slice'
+                      }
+                    }}
+                    width={300}
+                    height={300}
+                  />
+                </div>
               ) : (
                   <>
-                    {currentLanguage !== '' ? (
-                      <span tw="text-white self-center justify-self-center font-semibold text-lg">No repos found :(</span>
+                    {starredResponse && starredResponse.length > 0 && selectedLanguages.length > 0 ? (
+                      <ReposList featuredData={[]} starredData={starredResponse} mode={searchOption} />
                     ) : (
-                        <div tw="flex justify-center">
-                          <Image src="/peek.svg" width={300} height={300} layout="intrinsic" />
-                        </div>
+                        <>
+                          {currentLanguage !== '' ? (
+                            <span tw="text-white self-center justify-self-center font-semibold text-lg">No repos found :(</span>
+                          ) : (
+                              <div tw="flex justify-center">
+                                <Image src="/peek.svg" width={300} height={300} layout="intrinsic" />
+                              </div>
+                            )}
+                        </>
                       )}
                   </>
                 )}
             </>
           )}
+
       </div>
     </div>
   )

@@ -9,5 +9,7 @@ export default interface Repository {
   owner: Owner;
   description: string;
   stargazers_count: number;
-  html_url: string;
+  forks: number;
+  open_issues: number;
+  watchers: number;
 }
