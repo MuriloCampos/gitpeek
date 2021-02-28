@@ -1,11 +1,11 @@
 import { useQuery } from 'react-query';
-import axios from 'axios';
+import api from '../services/api';
 
 import IRepository from '../interfaces/Repository';
 
 const getMostStarredRepositories = async ({ queryKey }) => {
-  const { data } = await axios.get<IRepository[]>(
-    `${process.env.API_URL}/starred_repos?language=${encodeURIComponent(queryKey[1])}`,
+  const { data } = await api.get<IRepository[]>(
+    `starred_repos?language=${encodeURIComponent(queryKey[1])}`,
   );
 
   return data;

@@ -1,5 +1,5 @@
 import { useQuery } from 'react-query';
-import axios from 'axios';
+import api from '../services/api';
 
 import IFeaturedRepository from '../interfaces/FeaturedRepository';
 
@@ -8,8 +8,8 @@ interface ApiResponse {
 }
 
 const getRepositories = async ({ queryKey }) => {
-  const { data } = await axios.get<ApiResponse>(
-    `${process.env.API_URL}/repos?language=${encodeURIComponent(queryKey[1])}&interval=${queryKey[2]}`,
+  const { data } = await api.get<ApiResponse>(
+    `repos?language=${encodeURIComponent(queryKey[1])}&interval=${queryKey[2]}`,
   );
 
   return data;
