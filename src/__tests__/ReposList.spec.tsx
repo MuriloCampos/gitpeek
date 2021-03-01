@@ -13,7 +13,7 @@ describe("ReposList component", () => {
   }]
 
   it("should be able to render the infos of the given repositories", () => {
-    render(<ReposList data={repos}  />);
+    render(<ReposList featuredData={repos} starredData={[]} mode="featured"  />);
 
     expect(
       screen.getByText('first/repo')
@@ -33,7 +33,7 @@ describe("ReposList component", () => {
   });
 
   it("should link to the repo infos when one is clicked/pressed", () => {
-    render(<ReposList data={repos}  />);
+    render(<ReposList featuredData={repos} starredData={[]} mode="featured"  />);
 
     expect(screen.getByText('first/repo').closest('a')).toHaveAttribute('href', '/RepoInfo/first_repo')
   })

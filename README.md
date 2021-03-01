@@ -3,9 +3,8 @@
 ## Running the project
 
 - Create a .env.local file and add the Gitpeek API address (eg. API_URL=http://localhost:3333);
-- Make sure you have [yarn installed](https://yarnpkg.com/getting-started/install);
-- Install the dependencies `yarn install`;
-- Start your local server `yarn dev`;
+- Make sure you have [docker-compose installed](https://docs.docker.com/compose/install/);
+- Start the container `docker-compose up`
 - Open [http://localhost:3000](http://localhost:3000) with your browser to see the result 👀️.
 
 **You can also check the deployed version of [Gitpeek](https://gitpeek.vercel.app/)**
